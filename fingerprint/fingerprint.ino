@@ -63,13 +63,7 @@ void setup()
     
     delay(1); 
   }
-  /*lcd.begin(16, 2);                 //tell the lcd library that we are using a display that is 16 characters wide and 2 characters high
-  lcd.clear();                      //clear the display
-  lcd.setCursor(0, 0); // set cursor to top left corner
-  lcd.print("Waiting for");
-  lcd.setCursor(0, 1);
-  lcd.print("valid finger...");
- delay(5000);*/
+  finger.getTemplateCount();
 }
 
 
@@ -77,23 +71,26 @@ void loop()                     // run over and over again
 {
   if (digitalRead(5) == HIGH) {
     // trying to recognize registered print
-    id = getFingerprintIDez();
     lcd.clear();
     lcd.setCursor(0,0);
+    id = getFingerprintIDez;
     if (id == -1) {
       //rejected
-      lcd.print("Unrecognized id");
-    } else {
-      // ID can be printed
-      lcd.print("Recognized id #");
-      lcd.print(id); 
+      lcd.print("Unrecognized id");}
+    else {
+       // ID can be printed
+      lcd.print("Recognized ");
+      id = finger.templateCount;
+      lcd.print(id);
+      lcd.setCursor(0,1);
+      lcd.print("id's");
+      delay(1000);            //don't need to run this at full speed.
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Waiting to scan");
+      delay(1000);}
     }
-    delay(1000);            //don't need to run this at full speed.
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Waiting to scan");
-    delay(1000);
-  } else {
+    else {
     //lcd.begin(16, 2);                 //tell the lcd library that we are using a display that is 16 characters wide and 2 characters high
     lcd.clear();                      //clear the display
     lcd.setCursor(0, 0); // set cursor to top left corner
@@ -118,21 +115,8 @@ void loop()                     // run over and over again
   }
 }
 
-uint8_t getNextId() {
-  // we're going to look through all of the possible
-  // memory locations [1..127] for the first one that
-  // doesn't have a good fingerprint already stored
-  // in it.
-  for (uint8_t i = 1; i < 128; i++) {
-    // load the ith fingerprint model into memory
-    if (finger.loadModel(i) != FINGERPRINT_BADLOCATION) {
-      // check if we can convert that model into an image
-      if (finger.image2Tz() != FINGERPRINT_OK) {
-        // if we can't, then that's the one to replace!
-        return i;
-      }
-    }
-  }
+int getNextId() {
+ return finger.templateCount + 1;
 }
  
 uint8_t getFingerprintID() {
@@ -311,7 +295,8 @@ uint8_t getFingerprintEnroll() {
   lcd.begin(16, 2);                 //tell the lcd library that we are using a display that is 16 characters wide and 2 characters high
   lcd.clear();                      //clear the display
   lcd.setCursor(0, 0); // set cursor to top left corner
-      lcd.println("Image taken");
+      lcd.print("Image taken");
+      delay (1000);
       break;
     case FINGERPRINT_NOFINGER:
       Serial.print(".");

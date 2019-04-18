@@ -48,6 +48,7 @@ void setup()
   while (!Serial);  // For Yun/Leo/Micro/Zero/...
   delay(100);
   lcd.print("Fingerprint Lock");
+  delay(1000);
 
   // set the data rate for the sensor serial port
   finger.begin(57600);
@@ -63,7 +64,6 @@ void setup()
     
     delay(1); 
   }
-  finger.getTemplateCount();
 }
 
 
@@ -73,31 +73,33 @@ void loop()                     // run over and over again
     // trying to recognize registered print
     lcd.clear();
     lcd.setCursor(0,0);
-    id = getFingerprintIDez;
-    if (id == -1) {
-      //rejected
-      lcd.print("Unrecognized id");}
-    else {
-       // ID can be printed
-      lcd.print("Recognized ");
-      id = finger.templateCount;
-      lcd.print(id);
-      lcd.setCursor(0,1);
-      lcd.print("id's");
-      delay(1000);            //don't need to run this at full speed.
-      lcd.clear();
-      lcd.setCursor(0,0);
-      lcd.print("Waiting to scan");
-      delay(1000);}
-    }
-    else {
+    lcd.print("Recognized ");
+    finger.getTemplateCount();
+    lcd.print(finger.templateCount);
+    lcd.setCursor(0,1);
+    lcd.print("id's");
+    delay(1000);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Waiting to scan");  
+    delay(1000);
+    int num = getFingerprintIDez();
+      if (num == -1) {
+        //rejected
+        lcd.print("Unrecognized id");}
+}
+  else {
     //lcd.begin(16, 2);                 //tell the lcd library that we are using a display that is 16 characters wide and 2 characters high
     lcd.clear();                      //clear the display
     lcd.setCursor(0, 0); // set cursor to top left corner
     lcd.print("Ready to enroll");
     lcd.setCursor(0, 1);
     id = getNextId();
-    lcd.print("fingerprint id ");
+    lcd.print("fingerprint");
+    delay(1000);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("id ");
     lcd.print(id);
     delay(1000);
     //lcd.println("Please type in the ID # (from 1 to 127) you want to save this finger as...");
@@ -187,9 +189,9 @@ uint8_t getFingerprintID() {
 }
 
 // returns -1 if failed, otherwise returns ID #
-int getFingerprintIDez() {
-    //lcd.clear();
-  //lcd.setCursor(0,0);
+ uint8_t getFingerprintIDez() {
+    lcd.clear();
+  lcd.setCursor(0,0);
   uint8_t p = finger.getImage();
   if (p != FINGERPRINT_OK)  return -1;
 
@@ -200,8 +202,8 @@ int getFingerprintIDez() {
   if (p != FINGERPRINT_OK)  return -1;
   
   // found a match!
-  //lcd.print("Found ID #"); lcd.print(finger.fingerID); 
-  //delay (10000);
+  lcd.print("Found ID #"); lcd.print(finger.fingerID); 
+  delay (2000);
   return (int) finger.fingerID;
 }
 
@@ -273,7 +275,7 @@ uint8_t getFingerprintEnroll() {
   lcd.clear();                      //clear the display
   lcd.setCursor(0, 0); // set cursor to top left corner
   lcd.print("Remove finger");
-  delay(2000);
+  delay(1000);
   p = 0;
   while (p != FINGERPRINT_NOFINGER) {
     p = finger.getImage();
@@ -282,12 +284,14 @@ uint8_t getFingerprintEnroll() {
   lcd.clear();                      //clear the display
   lcd.setCursor(0, 0); // set cursor to top left corner
   lcd.print("ID "); lcd.print(id);
+  
   p = -1;
   lcd.clear();
   lcd.setCursor(0, 0); // set cursor to top left corner
   lcd.print("Place same");
   lcd.setCursor(0,1);
   lcd.print("finger again");
+  delay(100);
   while (p != FINGERPRINT_OK) {
     p = finger.getImage();
     switch (p) {
@@ -341,14 +345,17 @@ uint8_t getFingerprintEnroll() {
   lcd.begin(16, 2);                 //tell the lcd library that we are using a display that is 16 characters wide and 2 characters high
   lcd.clear();                      //clear the display
   lcd.setCursor(0, 0); // set cursor to top left corner
-  lcd.print("Creating model for #");  lcd.print(id);
+  lcd.print("Creating model");
+  lcd.setCursor(0,1);
+  lcd.print("for #");  lcd.print(id);
+  delay(1000);
   
   p = finger.createModel();
   if (p == FINGERPRINT_OK) {
   lcd.begin(16, 2);                 //tell the lcd library that we are using a display that is 16 characters wide and 2 characters high
   lcd.clear();                      //clear the display
   lcd.setCursor(0, 0); // set cursor to top left corner
-    lcd.println("Prints matched!");
+    lcd.print("Prints matched!");
   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
     Serial.println("Communication error");
     return p;
